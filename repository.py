@@ -23,5 +23,5 @@ class TaskRepository:
             query = select(TaskOrm)
             result = await session.execute(query)
             task_models = result.scalars().all()
-            task_schemas = [STask.model.validate(task_model) for task_model in task_models]
+            task_schemas = [STask.from_orm(task_model) for task_model in task_models]
             return task_models
