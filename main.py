@@ -2,34 +2,22 @@ from typing import Optional, Annotated
 
 from fastapi import FastAPI, Depends
 from pydantic import BaseModel
+from contextlib import asynccontextmanager
+
+from database import create_tables, delete_tables
+from schemas import STask, STaskAdd
 
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await delete_tables()
+    await create_tables()
+    print('Ready to work')
+    yield
+    print('Turn OFF')
 
-
-class STaskAdd(BaseModel):
-    name: str
-    description: Optional[str] = None
-
-
-class STask(STaskAdd):
-    id: int
+app = FastAPI(lifespan=lifespan)
 
 tasks = []
 
-@app.post('/tasks')
-async def add_task(
-    task: Annotated[STaskAdd, Depends()]
-):
-    tasks.append(task)
-    return {'ok': True}
 
-
-# @app.get('/home')
-# def get_home():
-#     return {'data': 'Hello world'}
-#
-# @app.get('/tasks')
-# def get_tasks():
-#     task = Task(name='Write this video')
-#     return {'data': task}
