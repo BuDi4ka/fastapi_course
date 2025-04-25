@@ -2,21 +2,22 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from schemas import STaskAdd
+from schemas import STaskAdd, STask
 from repository import TaskRepository
 
 router = APIRouter(
-    prefix='/tasks'
+    prefix='/tasks',
+    tags=['Tasks']
 )
 
 @router.post('')
 async def add_task(
     task: Annotated[STaskAdd, Depends()]
 ):
-    tasks.append(task)
-    return {'ok': True}
+    task_id = await TaskRepository.add_one(task)
+    return {'ok': True, 'task_id': task_id}
 
 @router.get('')
-def get_tasks():
-    task = Task(name='Write this video')
-    return {'data': task}
+async def get_tasks() -> list[STask]:
+    tasks = await TaskRepository.find_all()
+    return {'tasks': tasks}

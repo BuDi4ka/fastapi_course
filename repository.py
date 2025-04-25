@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.sql.visitors import replacement_traverse
 
 from database import new_session, TaskOrm
-from schemas import STaskAdd
+from schemas import STaskAdd, STask
 
 
 class TaskRepository:
@@ -18,9 +18,10 @@ class TaskRepository:
             return task.id
 
     @classmethod
-    async def find_all(cls):
+    async def find_all(cls) -> list[STask]:
         async with new_session() as session:
             query = select(TaskOrm)
             result = await session.execute(query)
             task_models = result.scalars().all()
+            task_schemas = [STask.model.validate(task_model) for task_model in task_models]
             return task_models
